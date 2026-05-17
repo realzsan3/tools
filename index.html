@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>小工具 · zsan</title>
+  <meta name="description" content="实用小工具，用完就走" />
+  <meta property="og:title" content="小工具 · zsan" />
+  <meta property="og:description" content="实用小工具，用完就走" />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%237f77dd'/></svg>" />
+
+  <style>
+    :root {
+      --bg:           #ffffff;
+      --bg-sub:       #f7f7f7;
+      --text:         #111111;
+      --text-muted:   #666666;
+      --text-faint:   #aaaaaa;
+      --border:       rgba(0,0,0,0.08);
+      --border-mid:   rgba(0,0,0,0.14);
+      --accent:       #7f77dd;
+      --accent-light: #eeedfe;
+      --accent-dark:  #534ab7;
+      --green:        #1d9e75;
+      --green-light:  #e1f5ee;
+      --green-dark:   #0f6e56;
+      --radius:       14px;
+      --radius-sm:    8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:           #0f0f0f;
+        --bg-sub:       #1a1a1a;
+        --text:         #f0f0f0;
+        --text-muted:   #888888;
+        --text-faint:   #555555;
+        --border:       rgba(255,255,255,0.07);
+        --border-mid:   rgba(255,255,255,0.13);
+        --accent:       #afa9ec;
+        --accent-light: rgba(127,119,221,0.12);
+        --accent-dark:  #cec9f6;
+        --green:        #5dcaa5;
+        --green-light:  rgba(29,158,117,0.12);
+        --green-dark:   #9fe1cb;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-back {
+      font-size: 12px;
+      color: var(--text-faint);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s;
+    }
+
+    .nav-back:hover { color: var(--text-muted); }
+
+    .nav-divider {
+      width: 0.5px;
+      height: 14px;
+      background: var(--border-mid);
+    }
+
+    .nav-logo {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .nav-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .nav-domain {
+      font-size: 12px;
+      color: var(--text-faint);
+    }
+
+    /* ── HEADER ── */
+    .header {
+      padding: 56px 48px 48px;
+      border-bottom: 0.5px solid var(--border);
+      opacity: 0;
+      animation: fadeUp 0.5s ease 0.05s forwards;
+    }
+
+    .header-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--accent-dark);
+      background: var(--accent-light);
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      letter-spacing: 0.04em;
+    }
+
+    .header-title {
+      font-size: clamp(28px, 5vw, 40px);
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+      line-height: 1.1;
+    }
+
+    .header-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ── FILTER ── */
+    .filter-bar {
+      display: none;
+      padding: 20px 48px;
+      border-bottom: 0.5px solid var(--border);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar.visible { display: flex; }
+
+    .filter-btn {
+      font-size: 12px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 0.5px solid var(--border-mid);
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover { border-color: var(--accent); color: var(--accent-dark); }
+
+    .filter-btn.active {
+      background: var(--accent-light);
+      border-color: transparent;
+      color: var(--accent-dark);
+    }
+
+    /* ── TOOLS GRID ── */
+    .tools-section {
+      flex: 1;
+      padding: 36px 48px 52px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease 0.15s forwards;
+    }
+
+    /* 1 个：居左，限宽 */
+    .tools-grid[data-count="1"] {
+      display: grid;
+      grid-template-columns: minmax(0, 400px);
+    }
+
+    /* 2 个：两列 */
+    .tools-grid[data-count="2"] {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    /* 3 个：三列 */
+    .tools-grid[data-count="3"] {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    /* 4 个以上：auto-fill 自适应 */
+    .tools-grid[data-count="many"] {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 0; height: 2px;
+      background: var(--accent);
+      transition: width 0.25s ease;
+    }
+
+    .card:hover { border-color: var(--border-mid); background: var(--bg-sub); }
+    .card:hover::after { width: 100%; }
+    .card.disabled { cursor: default; opacity: 0.55; pointer-events: none; }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .card-emoji { font-size: 26px; line-height: 1; }
+
+    .badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+      flex-shrink: 0;
+    }
+
+    .badge-可用     { background: var(--green-light);  color: var(--green-dark); }
+    .badge-demo     { background: var(--accent-light); color: var(--accent-dark); }
+    .badge-开发中   { background: var(--bg-sub); color: var(--text-faint); border: 0.5px solid var(--border-mid); }
+
+    .card-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      flex: 1;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+
+    .card-tag {
+      font-size: 10px;
+      color: var(--text-faint);
+      letter-spacing: 0.02em;
+    }
+
+    .card-arrow {
+      font-size: 14px;
+      color: var(--accent);
+      transition: transform 0.15s;
+    }
+
+    .card:hover .card-arrow { transform: translateX(3px); }
+
+    /* 空状态 */
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 0;
+      color: var(--text-faint);
+      font-size: 14px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      border-top: 0.5px solid var(--border);
+      padding: 18px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-copy { font-size: 12px; color: var(--text-faint); }
+
+    .footer-github {
+      font-size: 12px;
+      color: var(--text-faint);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s;
+    }
+
+    .footer-github:hover { color: var(--text-muted); }
+    .footer-github svg { width: 13px; height: 13px; fill: currentColor; }
+
+    /* ── ANIMATION ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 640px) {
+      .nav          { padding: 16px 20px; }
+      .header       { padding: 40px 20px 36px; }
+      .filter-bar   { padding: 16px 20px; }
+      .tools-section { padding: 24px 20px 40px; }
+      .footer       { padding: 16px 20px; }
+
+      .tools-grid[data-count="2"],
+      .tools-grid[data-count="3"],
+      .tools-grid[data-count="many"] {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (min-width: 641px) and (max-width: 900px) {
+      .nav          { padding: 18px 32px; }
+      .header       { padding: 48px 32px 40px; }
+      .filter-bar   { padding: 18px 32px; }
+      .tools-section { padding: 28px 32px 44px; }
+      .footer       { padding: 18px 32px; }
+
+      .tools-grid[data-count="3"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 配置文件，新增工具只改这里 -->
+  <script src="tools.config.js"></script>
+
+  <nav class="nav">
+    <div class="nav-left">
+      <a class="nav-back" id="nav-back" href="#">← 返回主页</a>
+      <div class="nav-divider"></div>
+      <a class="nav-logo" id="nav-logo" href="#">
+        <span id="nav-owner"></span>
+        <span class="nav-dot"></span>
+      </a>
+    </div>
+    <span class="nav-domain">tools.919333.xyz</span>
+  </nav>
+
+  <div class="header">
+    <div class="header-tag">🛠 小工具</div>
+    <h1 class="header-title" id="header-title"></h1>
+    <p class="header-sub" id="header-sub"></p>
+  </div>
+
+  <!-- tag 筛选器，工具超过 filterMinCount 自动显示 -->
+  <div class="filter-bar" id="filter-bar"></div>
+
+  <main class="tools-section">
+    <div class="tools-grid" id="tools-grid"></div>
+  </main>
+
+  <footer class="footer">
+    <span class="footer-copy">© <span id="year"></span> <span id="footer-owner"></span></span>
+    <a class="footer-github" id="footer-github" href="#" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58 0-.28-.01-1.03-.01-2.02-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22 0 1.6-.01 2.9-.01 3.29 0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </footer>
+
+  <script>
+    const cfg  = TOOLS_CONFIG;
+    const page = cfg.page;
+    const tools = cfg.tools;
+
+    // ── 基础信息填充 ──
+    document.title = `小工具 · ${page.owner}`;
+    document.getElementById('nav-back').href    = page.back;
+    document.getElementById('nav-logo').href    = page.back;
+    document.getElementById('nav-owner').textContent  = page.owner;
+    document.getElementById('header-title').textContent = page.title;
+    document.getElementById('header-sub').textContent   = page.subtitle;
+    document.getElementById('year').textContent         = new Date().getFullYear();
+    document.getElementById('footer-owner').textContent = page.owner;
+    document.getElementById('footer-github').href       = page.github;
+
+    // ── 网格列数策略 ──
+    const grid = document.getElementById('tools-grid');
+    function getCountAttr(n) {
+      if (n === 1) return '1';
+      if (n === 2) return '2';
+      if (n === 3) return '3';
+      return 'many';
+    }
+
+    // ── 渲染卡片 ──
+    function renderCards(list) {
+      grid.innerHTML = '';
+      grid.dataset.count = getCountAttr(list.length);
+
+      if (list.length === 0) {
+        grid.innerHTML = '<p class="empty">暂无工具</p>';
+        return;
+      }
+
+      list.forEach((tool, i) => {
+        const isWip = tool.status === '开发中';
+        const a = document.createElement('a');
+        a.className = 'card' + (isWip ? ' disabled' : '');
+        a.href   = isWip ? 'javascript:void(0)' : tool.url;
+        a.target = isWip ? '' : '_blank';
+        a.rel    = isWip ? '' : 'noopener';
+        a.style.animationDelay = `${0.05 * i}s`;
+
+        a.innerHTML = `
+          <div class="card-top">
+            <span class="card-emoji">${tool.emoji}</span>
+            <span class="badge badge-${tool.status}">${tool.status}</span>
+          </div>
+          <p class="card-name">${tool.name}</p>
+          <p class="card-desc">${tool.desc}</p>
+          <div class="card-footer">
+            <span class="card-tag">${tool.tag ? '# ' + tool.tag : ''}</span>
+            <span class="card-arrow">${isWip ? '' : '→'}</span>
+          </div>
+        `;
+        grid.appendChild(a);
+      });
+    }
+
+    // ── 筛选器 ──
+    const filterBar = document.getElementById('filter-bar');
+
+    function renderFilter() {
+      if (tools.length < cfg.filterMinCount) return;
+
+      filterBar.classList.add('visible');
+      const tags = ['全部', ...new Set(tools.map(t => t.tag).filter(Boolean))];
+      let active = '全部';
+
+      tags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn' + (tag === '全部' ? ' active' : '');
+        btn.textContent = tag === '全部' ? '全部' : '# ' + tag;
+        btn.onclick = () => {
+          active = tag;
+          filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const filtered = tag === '全部' ? tools : tools.filter(t => t.tag === tag);
+          renderCards(filtered);
+        };
+        filterBar.appendChild(btn);
+      });
+    }
+
+    // ── 初始化 ──
+    renderCards(tools);
+    renderFilter();
+  </script>
+</body>
+</html>
