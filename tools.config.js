@@ -24,10 +24,10 @@ const TOOLS_CONFIG = {
     {
       name:   "财务自由/养老提款计算器",
       desc:   "本地",
-      url:    "https://firegrid.919333.xyz",  // ← 替换成真实 URL
+      url:    "https://paceflow.111533.xyz",  // ← 替换成真实 URL
       emoji:  "💰",
       tag:    "理财",
-      status: "demo",
+      status: "可用",
     },
     {
       name:   "记忆助手",
